@@ -9,9 +9,15 @@ function Toolbar() {
         <a href="/example-1">Example 1</a>
       </div>
       <div className="social-links">
-        <a href="https://github.com/">GitHub</a>
-        <a href="https://linkedin.com/">LinkedIn</a>
-        <a href="https://twitter.com/">Twitter</a>
+        <a href="https://github.com/BrevinS">
+          <i className="fab fa-github"></i> GitHub
+        </a>
+        <a href="https://linkedin.com/in/brevin-simon-a197ba206/">
+          <i className="fab fa-linkedin"></i> LinkedIn
+        </a>
+        <a href="https://twitter.com/BrevinOfficial">
+          <i className="fab fa-twitter"></i> Twitter
+        </a>
       </div>
     </div>
   );
