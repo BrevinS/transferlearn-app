@@ -17,6 +17,14 @@ import {
 import '@aws-amplify/ui-react/styles.css';
 import { API, Storage } from 'aws-amplify';
 import { v4 as uuid } from 'uuid';
+import './App.css';
+// add mutations
+import { 
+  createTextDocument, 
+  updateTextDocument,
+  deleteTextDocument
+} from './graphql/mutations';
+import Header from './Header';
 
 const App = ({ signOut }) => {
   const [file, setFile] = useState(null);
@@ -65,13 +73,16 @@ const App = ({ signOut }) => {
   };
 
   return (
-    <div>
-      <h1>Upload Text Document</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={uploadFile}>Upload</button>
-    <View>
-      <Button onClick={signOut}>Sign Out</Button> 
-    </View> 
+    <div className="App">
+      <Header /> {/* NEW */}
+      <div className="container">Upload Text Document</div>
+      <div className="inputs">
+        <input type="file" onChange={handleFileChange} />
+        <button onClick={uploadFile}>Upload</button>
+      </div>
+      <View>
+        <Button onClick={signOut}>Sign Out</Button> 
+      </View> 
     </div>
      );
 }
