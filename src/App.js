@@ -25,6 +25,7 @@ import {
   deleteTextDocument
 } from './graphql/mutations';
 import Header from './Header';
+import Toolbar from './Toolbar'; 
 
 const App = ({ signOut }) => {
   const [file, setFile] = useState(null);
@@ -74,6 +75,7 @@ const App = ({ signOut }) => {
 
   return (
     <div className="App">
+      <Toolbar /> {/* Include the Toolbar component */}
       <Header /> {/* NEW */}
       <div className="container">Upload Text Document</div>
       <div className="inputs">

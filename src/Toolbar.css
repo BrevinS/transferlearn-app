@@ -1,0 +1,17 @@
+.Toolbar {
+    background-color: blue;
+    color: #fff;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .page-links a,
+  .social-links a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 20px;
+    font-weight: bold;
+  }
+  
