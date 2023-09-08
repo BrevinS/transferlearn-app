@@ -14,6 +14,9 @@
     "categories": {
       "auth": {
         "transferlearnapp8eaeaa67": {}
+      },
+      "api": {
+        "transferlearnapp": {}
       }
     }
   }

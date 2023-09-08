@@ -10,14 +10,3 @@ type TextDocument @model @auth(rules: [ { allow: public } ] ){
   s3Key: String! # This stores the S3 object key
   # You can add more fields here, like the content of the document or metadata.
 }
-
-# Other attributes for later 
-# type Query {
-#   getTextDocument(id: ID!): TextDocument
-#   # Other queries for your application
-# }
-
-# type Mutation {
-#   uploadTextDocument(file: Upload!): TextDocument
-#   # Other mutations for your application
-# }
