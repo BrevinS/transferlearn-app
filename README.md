@@ -1,3 +1,23 @@
+### Current Project (Started September 7) 
+## Learning Targets Include:
+* AWS Amplify, API Gateway, SageMaker, Transformers, GraphQL, React.js, Terraform, etc.
+
+## Project Use Case
+The purpose of this site is to allow users to upload a writing or two of their own work and for a General Purpose Transformer (GPT) using transfer learning with their own writing to be put into consideration by the model to create a response that sounds genuinely similar to the user writings.
+
+
+
+
+
+
+
+
+
+
+
+
+
+- - 
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
