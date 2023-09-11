@@ -10,13 +10,6 @@ The purpose of this site is to allow users to upload a writing or two of their o
 
 
 
-
-
-
-
-
-
-
 - - 
 # Getting Started with Create React App
 

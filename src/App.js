@@ -12,7 +12,8 @@ import React, { useState } from 'react';
 import { 
   withAuthenticator, 
   Button,
-  View
+  View,
+  Alert
 } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { API, Storage } from 'aws-amplify';
@@ -20,67 +21,71 @@ import { v4 as uuid } from 'uuid';
 import './App.css';
 // add mutations
 import { 
-  createTextDocument, 
-  updateTextDocument,
-  deleteTextDocument
+  createTextDocument
 } from './graphql/mutations';
 import Header from './Header';
 import Toolbar from './Toolbar'; 
 
 const App = ({ signOut }) => {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); // Use an array to store multiple files
 
   const handleFileChange = (event) => {
-    const uploadedFile = event.target.files[0];
-    setFile(uploadedFile);
+    const uploadedFiles = event.target.files;
+    setFiles(uploadedFiles);
   };
 
-  const uploadFile = async () => {
-    if (file) {
-      try {
+  const uploadFiles = async () => {
+    if (files.length === 0) {
+      // Alert.warning('Please select one or more files to upload.');
+      return;
+    }
+
+    try {
+      const promises = files.map(async (file) => {
         // Generate a unique key for the file in S3
         const s3Key = `documents/${uuid()}_${file.name}`;
 
         // Upload the file to S3
         await Storage.put(s3Key, file, {
           contentType: file.type,
+          bucket: 'transferlearnappdocumentstorage195302-staging' // Specify the S3 bucket name
         });
 
         // Create a new TextDocument in the GraphQL API
         const newDocument = await API.graphql({
-          query: `
-            mutation CreateTextDocument($fileName: String!, $s3Key: String!) {
-              createTextDocument(input: {
-                fileName: $fileName,
-                s3Key: $s3Key
-              }) {
-                id
-                fileName
-                s3Key
-              }
-            }
-          `,
+          query: createTextDocument, // Use the imported mutation
           variables: {
-            fileName: file.name,
-            s3Key: s3Key,
+            input: {
+              fileName: file.name,
+              s3Key: s3Key,
+            },
           },
         });
 
-        console.log('Uploaded and created document:', newDocument.data.createTextDocument);
-      } catch (error) {
-        console.error('Error uploading file:', error);
-      }
+        return newDocument.data.createTextDocument;
+      });
+
+      const uploadedDocuments = await Promise.all(promises);
+      console.log('Uploaded and created documents:', uploadedDocuments);
+
+      // Optionally, you can display a success message to the user
+      // Alert.success('Files uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      // Display an error message to the user
+      // Alert.error('Error uploading files. Please try again later.');
     }
   };
+
 
   return (
     <div className="App">
       <Toolbar /> {/* Include the Toolbar component */}
       <Header /> {/* NEW */}
-      <div className="container">Upload Text Document</div>
+      <div className="container">Upload Text Documents</div>
       <div className="inputs">
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={uploadFile}>Upload</button>
+        <input type="file" onChange={handleFileChange} multiple /> {/* Allow multiple file selection */}
+        <button onClick={uploadFiles}>Upload</button>
       </div>
       <View>
         <Button onClick={signOut}>Sign Out</Button> 

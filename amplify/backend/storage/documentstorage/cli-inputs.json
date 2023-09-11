@@ -1,0 +1,14 @@
+{
+  "resourceName": "documentstorage",
+  "policyUUID": "bdc4629f",
+  "bucketName": "transferlearnappdocumentstorage",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
