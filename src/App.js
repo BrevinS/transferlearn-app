@@ -12,8 +12,7 @@ import React, { useState } from 'react';
 import { 
   withAuthenticator, 
   Button,
-  View,
-  Alert
+  View
 } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { API, Storage } from 'aws-amplify';
@@ -28,15 +27,17 @@ import Toolbar from './Toolbar';
 
 const App = ({ signOut }) => {
   const [files, setFiles] = useState([]); // Use an array to store multiple files
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFileChange = (event) => {
     const uploadedFiles = event.target.files;
-    setFiles(uploadedFiles);
+    const filesArray = Array.from(uploadedFiles);
+    setFiles(filesArray);
   };
 
   const uploadFiles = async () => {
     if (files.length === 0) {
-      // Alert.warning('Please select one or more files to upload.');
+      setErrorMessage('Please select one or more files to upload.');
       return;
     }
 
@@ -48,12 +49,12 @@ const App = ({ signOut }) => {
         // Upload the file to S3
         await Storage.put(s3Key, file, {
           contentType: file.type,
-          bucket: 'transferlearnappdocumentstorage195302-staging' // Specify the S3 bucket name
+          bucket: 'transferlearnappdocumentstorage195302-staging'
         });
 
         // Create a new TextDocument in the GraphQL API
         const newDocument = await API.graphql({
-          query: createTextDocument, // Use the imported mutation
+          query: createTextDocument, 
           variables: {
             input: {
               fileName: file.name,
@@ -69,11 +70,11 @@ const App = ({ signOut }) => {
       console.log('Uploaded and created documents:', uploadedDocuments);
 
       // Optionally, you can display a success message to the user
-      // Alert.success('Files uploaded successfully!');
+      setErrorMessage('Files uploaded successfully!');
     } catch (error) {
       console.error('Error uploading files:', error);
       // Display an error message to the user
-      // Alert.error('Error uploading files. Please try again later.');
+      setErrorMessage('Error uploading files. Please try again later.');
     }
   };
 
@@ -86,6 +87,7 @@ const App = ({ signOut }) => {
       <div className="inputs">
         <input type="file" onChange={handleFileChange} multiple /> {/* Allow multiple file selection */}
         <button onClick={uploadFiles}>Upload</button>
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
       </div>
       <View>
         <Button onClick={signOut}>Sign Out</Button> 
