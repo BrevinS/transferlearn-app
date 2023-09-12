@@ -53,3 +53,5 @@ amplifytools.xcconfig
 *.tfstate.*
 
 credentials.tfvars
+.zip
+
