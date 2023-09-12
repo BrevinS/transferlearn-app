@@ -10,6 +10,8 @@ export const createTextDocument = /* GraphQL */ `
       id
       fileName
       s3Key
+      prompt
+      ownerEmail
       createdAt
       updatedAt
       __typename
@@ -25,6 +27,8 @@ export const updateTextDocument = /* GraphQL */ `
       id
       fileName
       s3Key
+      prompt
+      ownerEmail
       createdAt
       updatedAt
       __typename
@@ -40,6 +44,8 @@ export const deleteTextDocument = /* GraphQL */ `
       id
       fileName
       s3Key
+      prompt
+      ownerEmail
       createdAt
       updatedAt
       __typename

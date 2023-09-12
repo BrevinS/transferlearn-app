@@ -25,18 +25,26 @@ export default function TextDocumentCreateForm(props) {
   const initialValues = {
     fileName: "",
     s3Key: "",
+    prompt: "",
+    ownerEmail: "",
   };
   const [fileName, setFileName] = React.useState(initialValues.fileName);
   const [s3Key, setS3Key] = React.useState(initialValues.s3Key);
+  const [prompt, setPrompt] = React.useState(initialValues.prompt);
+  const [ownerEmail, setOwnerEmail] = React.useState(initialValues.ownerEmail);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     setFileName(initialValues.fileName);
     setS3Key(initialValues.s3Key);
+    setPrompt(initialValues.prompt);
+    setOwnerEmail(initialValues.ownerEmail);
     setErrors({});
   };
   const validations = {
     fileName: [{ type: "Required" }],
     s3Key: [{ type: "Required" }],
+    prompt: [],
+    ownerEmail: [{ type: "Required" }],
   };
   const runValidationTasks = async (
     fieldName,
@@ -66,6 +74,8 @@ export default function TextDocumentCreateForm(props) {
         let modelFields = {
           fileName,
           s3Key,
+          prompt,
+          ownerEmail,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -130,6 +140,8 @@ export default function TextDocumentCreateForm(props) {
             const modelFields = {
               fileName: value,
               s3Key,
+              prompt,
+              ownerEmail,
             };
             const result = onChange(modelFields);
             value = result?.fileName ?? value;
@@ -155,6 +167,8 @@ export default function TextDocumentCreateForm(props) {
             const modelFields = {
               fileName,
               s3Key: value,
+              prompt,
+              ownerEmail,
             };
             const result = onChange(modelFields);
             value = result?.s3Key ?? value;
@@ -168,6 +182,60 @@ export default function TextDocumentCreateForm(props) {
         errorMessage={errors.s3Key?.errorMessage}
         hasError={errors.s3Key?.hasError}
         {...getOverrideProps(overrides, "s3Key")}
+      ></TextField>
+      <TextField
+        label="Prompt"
+        isRequired={false}
+        isReadOnly={false}
+        value={prompt}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              fileName,
+              s3Key,
+              prompt: value,
+              ownerEmail,
+            };
+            const result = onChange(modelFields);
+            value = result?.prompt ?? value;
+          }
+          if (errors.prompt?.hasError) {
+            runValidationTasks("prompt", value);
+          }
+          setPrompt(value);
+        }}
+        onBlur={() => runValidationTasks("prompt", prompt)}
+        errorMessage={errors.prompt?.errorMessage}
+        hasError={errors.prompt?.hasError}
+        {...getOverrideProps(overrides, "prompt")}
+      ></TextField>
+      <TextField
+        label="Owner email"
+        isRequired={true}
+        isReadOnly={false}
+        value={ownerEmail}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              fileName,
+              s3Key,
+              prompt,
+              ownerEmail: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.ownerEmail ?? value;
+          }
+          if (errors.ownerEmail?.hasError) {
+            runValidationTasks("ownerEmail", value);
+          }
+          setOwnerEmail(value);
+        }}
+        onBlur={() => runValidationTasks("ownerEmail", ownerEmail)}
+        errorMessage={errors.ownerEmail?.errorMessage}
+        hasError={errors.ownerEmail?.hasError}
+        {...getOverrideProps(overrides, "ownerEmail")}
       ></TextField>
       <Flex
         justifyContent="space-between"

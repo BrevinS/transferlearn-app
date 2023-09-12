@@ -15,16 +15,22 @@ export declare type ValidationFunction<T> = (value: T, validationResponse: Valid
 export declare type TextDocumentUpdateFormInputValues = {
     fileName?: string;
     s3Key?: string;
+    prompt?: string;
+    ownerEmail?: string;
 };
 export declare type TextDocumentUpdateFormValidationValues = {
     fileName?: ValidationFunction<string>;
     s3Key?: ValidationFunction<string>;
+    prompt?: ValidationFunction<string>;
+    ownerEmail?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type TextDocumentUpdateFormOverridesProps = {
     TextDocumentUpdateFormGrid?: PrimitiveOverrideProps<GridProps>;
     fileName?: PrimitiveOverrideProps<TextFieldProps>;
     s3Key?: PrimitiveOverrideProps<TextFieldProps>;
+    prompt?: PrimitiveOverrideProps<TextFieldProps>;
+    ownerEmail?: PrimitiveOverrideProps<TextFieldProps>;
 } & EscapeHatchProps;
 export declare type TextDocumentUpdateFormProps = React.PropsWithChildren<{
     overrides?: TextDocumentUpdateFormOverridesProps | undefined | null;

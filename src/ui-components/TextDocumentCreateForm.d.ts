@@ -15,16 +15,22 @@ export declare type ValidationFunction<T> = (value: T, validationResponse: Valid
 export declare type TextDocumentCreateFormInputValues = {
     fileName?: string;
     s3Key?: string;
+    prompt?: string;
+    ownerEmail?: string;
 };
 export declare type TextDocumentCreateFormValidationValues = {
     fileName?: ValidationFunction<string>;
     s3Key?: ValidationFunction<string>;
+    prompt?: ValidationFunction<string>;
+    ownerEmail?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type TextDocumentCreateFormOverridesProps = {
     TextDocumentCreateFormGrid?: PrimitiveOverrideProps<GridProps>;
     fileName?: PrimitiveOverrideProps<TextFieldProps>;
     s3Key?: PrimitiveOverrideProps<TextFieldProps>;
+    prompt?: PrimitiveOverrideProps<TextFieldProps>;
+    ownerEmail?: PrimitiveOverrideProps<TextFieldProps>;
 } & EscapeHatchProps;
 export declare type TextDocumentCreateFormProps = React.PropsWithChildren<{
     overrides?: TextDocumentCreateFormOverridesProps | undefined | null;

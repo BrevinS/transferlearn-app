@@ -1,64 +1,61 @@
-/* schema.graphql 
-input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
-
-type TextDocument @model @auth(rules: [ { allow: public } ] ){
-  id: ID!
-  fileName: String!
-  s3Key: String! # This stores the S3 object key
-  # You can add more fields here, like the content of the document or metadata.
-}
-*/
-import React, { useState } from 'react';
-import { 
-  withAuthenticator, 
-  Button,
-  View
-} from '@aws-amplify/ui-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { withAuthenticator, Button, View } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
-import { API, Storage } from 'aws-amplify';
+import { API, Storage, Auth } from 'aws-amplify';
 import { v4 as uuid } from 'uuid';
 import './App.css';
-// add mutations
-import { 
-  createTextDocument
-} from './graphql/mutations';
+import { createTextDocument } from './graphql/mutations';
 import Header from './Header';
-import Toolbar from './Toolbar'; 
+import Toolbar from './Toolbar';
+import { useDropzone } from 'react-dropzone';
 
 const App = ({ signOut }) => {
-  const [files, setFiles] = useState([]); // Use an array to store multiple files
   const [errorMessage, setErrorMessage] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [prompt, setPrompt] = useState('');
+  const [userEmail, setUserEmail] = useState('');
 
-  const handleFileChange = (event) => {
-    const uploadedFiles = event.target.files;
-    const filesArray = Array.from(uploadedFiles);
-    setFiles(filesArray);
-  };
-
-  const uploadFiles = async () => {
-    if (files.length === 0) {
-      setErrorMessage('Please select one or more files to upload.');
-      return;
+  useEffect(() => {
+    async function fetchUserEmail() {
+      try {
+        const user = await Auth.currentAuthenticatedUser();
+        setUserEmail(user.attributes.email);
+      } catch (error) {
+        console.error('Error fetching user email:', error);
+        setUserEmail('Error fetching email'); // Handle the error as needed
+      }
     }
 
+    fetchUserEmail();
+  }, []);
+
+  const uploadFiles = useCallback(async () => {
     try {
-      const promises = files.map(async (file) => {
+      if (uploadedFiles.length === 0 || prompt.trim() === '') {
+        // Check if files and prompt are provided
+        setErrorMessage('Please add files and enter a prompt.');
+        return;
+      }
+
+      const promises = uploadedFiles.map(async (file) => {
         // Generate a unique key for the file in S3
         const s3Key = `documents/${uuid()}_${file.name}`;
 
         // Upload the file to S3
         await Storage.put(s3Key, file, {
           contentType: file.type,
-          bucket: 'transferlearnappdocumentstorage195302-staging'
+          bucket: 'transferlearnappdocumentstorage195302-staging',
         });
 
         // Create a new TextDocument in the GraphQL API
         const newDocument = await API.graphql({
-          query: createTextDocument, 
+          query: createTextDocument,
           variables: {
             input: {
               fileName: file.name,
               s3Key: s3Key,
+              prompt: prompt, // Store the prompt in GraphQL
+              ownerEmail: {userEmail} // Set the ownerEmail field
             },
           },
         });
@@ -69,31 +66,58 @@ const App = ({ signOut }) => {
       const uploadedDocuments = await Promise.all(promises);
       console.log('Uploaded and created documents:', uploadedDocuments);
 
+      // Clear the list of uploaded files and prompt input
+      setUploadedFiles([]);
+      setPrompt('');
+
       // Optionally, you can display a success message to the user
-      setErrorMessage('Files uploaded successfully!');
+      setErrorMessage('');
     } catch (error) {
       console.error('Error uploading files:', error);
       // Display an error message to the user
       setErrorMessage('Error uploading files. Please try again later.');
     }
-  };
+  }, [uploadedFiles, prompt]);
 
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      setUploadedFiles(acceptedFiles); // Store uploaded files
+    },
+  });
 
   return (
     <div className="App">
-      <Toolbar /> {/* Include the Toolbar component */}
-      <Header /> {/* NEW */}
+      <Toolbar />
+      <Header />
+      <p>User Email: {userEmail}</p>
       <div className="container">Upload Text Documents</div>
       <div className="inputs">
-        <input type="file" onChange={handleFileChange} multiple /> {/* Allow multiple file selection */}
-        <button onClick={uploadFiles}>Upload</button>
+        <div {...getRootProps()} className="dropzone">
+          <input {...getInputProps()} />
+          <p>Drag 'n' drop some files here, or click to select files</p>
+        </div>
+        <input
+          type="text"
+          placeholder="Enter a prompt"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+        />
+        <button onClick={uploadFiles}>Upload Files and Prompt</button>
         {errorMessage && <div className="error-message">{errorMessage}</div>}
+        <div className="file-list">
+          <h2>Uploaded Files</h2>
+          <ul>
+            {uploadedFiles.map((file, index) => (
+              <li key={index}>{file.name}</li>
+            ))}
+          </ul>
+        </div>
       </div>
       <View>
-        <Button onClick={signOut}>Sign Out</Button> 
-      </View> 
+        <Button onClick={signOut}>Sign Out</Button>
+      </View>
     </div>
-     );
-}
+  );
+};
 
 export default withAuthenticator(App);

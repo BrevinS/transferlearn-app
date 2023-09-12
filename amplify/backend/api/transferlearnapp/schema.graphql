@@ -4,9 +4,11 @@
 
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
-type TextDocument @model @auth(rules: [ { allow: public } ] ){
+type TextDocument @model @auth(rules: [ { allow: public } ] ) @searchable{
   id: ID!
   fileName: String!
   s3Key: String! # This stores the S3 object key
+  prompt: String  # Add a prompt field
+  ownerEmail: String!
   # You can add more fields here, like the content of the document or metadata.
 }
