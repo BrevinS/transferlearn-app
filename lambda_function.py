@@ -1,7 +1,10 @@
 import json
 import os
 import boto3
+import botocore.exceptions
 import requests
+import slate3k as slate
+import tempfile
 
 s3_client = boto3.client('s3')
 
@@ -46,38 +49,15 @@ def lambda_handler(event, context):
         
         # Extract unique S3Keys and store them in a list
         s3_keys = list(set(item["s3Key"] for item in graphql_data["data"]["listTextDocuments"]["items"]))
+        print('Raw S3 keys: ')
+        print(s3_keys)
+        visible_objects = filter_existing_objects(s3_keys)
+        print('Concatenatable Objects = {}'.format(visible_objects))
         
-        # Create a set to store the unique parts after the underscore
-        unique_parts = set()
-
-        # Initialize a list to store the filtered S3 keys
-        filtered_s3_keys = []
-        # Initialize a list to store the duplicate S3 keys
-        duplicate_s3_keys = []
-
-        # Iterate through the S3 keys and filter out duplicates
-        for s3_key in s3_keys:
-          # Extract the part after the underscore
-          part_after_underscore = s3_key.split('_')[-1]
-          # If the part is not in the set of unique parts, add it to the set and the filtered list
-          if part_after_underscore not in unique_parts:
-            unique_parts.add(part_after_underscore)
-            filtered_s3_keys.append(s3_key)
-          else:
-            # If it's a duplicate, add it to the list of duplicates
-            duplicate_s3_keys.append(s3_key)
+        # Call the function to concatenate files based on the list of S3 keys
+        concatenated_text = concatenate_files(visible_objects)
+        print('Corpus String length: {} bytes'.format(len(concatenated_text)))
         
-        print('Duplicate Keys: ')
-        print(duplicate_s3_keys)
-        # Print the list of unique S3Keys
-        print('S3 Keys of user {}'.format(email))
-        # We now have the unique S3 keys of the users. 
-        print(filtered_s3_keys)
-        
-        # Delete the duplicate files from the S3 bucket
-        for duplicate_key in duplicate_s3_keys:
-          s3_client.delete_object(Bucket=bucket, Key='public/' + duplicate_key)
-  
         return {
             'statusCode': 200,
             'body': json.dumps('Success')
@@ -88,3 +68,65 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps('Error')
         }
+        
+def filter_existing_objects(object_keys):
+    existing_objects = []
+
+    for key in object_keys:
+        try:
+            s3_client.head_object(Bucket='transferlearnappdocumentstorage195302-staging', Key='public/' + key)
+            existing_objects.append(key)
+        except Exception as e:
+            # Handle exceptions for non-existent or inaccessible objects
+            print(f"Object {key} does not exist or is not accessible: {e}")
+
+    return existing_objects
+
+def extract_text_from_pdf(pdf_key):
+    try:
+        # Download the PDF file from S3 to a temporary location
+        temp_file_path = tempfile.mktemp()
+        s3_client.download_file(Bucket='transferlearnappdocumentstorage195302-staging', Key='public/' + pdf_key, Filename=temp_file_path)
+
+        # Initialize an empty string to store the extracted text
+        extracted_text = ""
+
+        # Open the downloaded PDF file using slate
+        with open(temp_file_path, 'rb') as pdf_file:
+            doc = slate.PDF(pdf_file)
+
+            # Extract text from the PDF
+            extracted_text = '\n'.join(doc)
+
+        return extracted_text
+    except Exception as e:
+        # Handle any exceptions here
+        raise e
+
+# Function to concatenate text from a list of S3 keys
+def concatenate_files(keys):
+    bucket_name = 'transferlearnappdocumentstorage195302-staging'
+    file_contents = []
+    
+    for key in keys:
+        if key.lower().endswith('.pdf'):
+            print('pdf key is {}'.format(key))
+            # Extract text from PDF and append to the list
+            pdf_text = extract_text_from_pdf(key)
+            file_contents.append(pdf_text)
+        elif key.lower().endswith('.txt'):
+            # Read text directly from TXT file and append to the list
+            print('text key is {}'.format(key))
+            try:
+                response = s3_client.get_object(Bucket=bucket_name, Key='public/' + key)
+                txt_content = response['Body'].read().decode('latin-1')
+                file_contents.append(txt_content)
+            except botocore.exceptions.NoCredentialsError as e:
+                # Handle the exception when the bucket is absent
+                raise Exception("Bucket not found or access denied") from e
+
+    # Concatenate all text contents into one long string
+    concatenated_text = ' '.join(file_contents)
+
+    return concatenated_text
+    
