@@ -71,6 +71,11 @@ resource "aws_iam_policy" "lambda_policy" {
         Effect   = "Allow",
         Resource = "arn:aws:s3:::transferlearnappdocumentstorage195302-staging/*",
       },
+      {
+        Action   = "s3:DeleteObject",
+        Effect   = "Allow",
+        Resource = "arn:aws:s3:::transferlearnappdocumentstorage195302-staging/public/documents/*",
+      },
     ],
   })
 }
